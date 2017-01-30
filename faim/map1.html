@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Map</title>
+    <meta name="viewport" content="initial-scale=1.0">
+    <meta charset="utf-8">
+    <style>
+    /* Always set the map height explicitly to define the size of the div
+    * element that contains the map. */
+    #map {
+        height: 50%;
+    }
+    /* Optional: Makes the sample page fill the window. */
+    html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+    }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <script>
+    var map;
+    var lat;
+    var lng;
+    var infoWindow;
+    var service;
+
+    function find_l(){
+        infoWindow = new google.maps.InfoWindow({map: map});
+        //if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function () {}, function () {}, {});
+        navigator.geolocation.getCurrentPosition(function(position) {
+            var pos = {
+                lat: position.coords.latitude,
+                lng: position.coords.longitude
+
+            };
+
+            infoWindow.setPosition(pos);
+            infoWindow.setContent('Location found.');
+            map.setCenter(pos);
+            map.setZoom(18);
+
+            lat = pos.lat;
+            lng = pos.lng;
+
+        }, function() {
+            handleLocationError(true, infoWindow, map.getCenter());
+        }, {enableHighAccuracy:true});
+
+
+    }
+    /*12.9715987, 77.5945627
+    12°58'17.8"N 77°35'40.4"E
+    12.862328, 77.660640
+    12°51'44.4"N 77°39'38.3"E*/
+
+    function initMap() {
+        var India = {lat:22.5619491, lng: 85.364927};
+        map = new google.maps.Map(document.getElementById('map'), {
+            //center: {lat: 12.8629615, lng: 77.6593393},
+            center: India,
+            zoom: 4
+        });
+    }
+
+    function find_r(){
+        service = new google.maps.places.PlacesService(map);
+        service.nearbySearch({
+            location: {lat, lng},
+            radius: 10000,
+            type: ['restaurant']
+        }, callback);
+    }
+
+    function callback(results, status) {
+       if (status === google.maps.places.PlacesServiceStatus.OK) {
+         for (var i = 0; i < results.length; i++) {
+           createMarker(results[i]);
+           console.log(results[i]);
+         }
+       }
+     }
+
+
+
+     function createMarker(place) {
+         var infoWindow1 = new google.maps.InfoWindow();
+        var placeLoc = place.geometry.location;
+        var marker = new google.maps.Marker({
+          map: map,
+          position: place.geometry.location
+        });
+
+        google.maps.event.addListener(marker, 'click', function() {
+          infowindow1.setContent(place.name);
+          infowindow1.open(map, this);
+        });
+      }
+
+</script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA2t2amloEYqsetiK4-6mdByE9OhQtYoJU&libraries=places&callback=initMap"
+async defer></script>
+<button onclick="find_l()">Find Location</button>
+<button onclick="find_r()">Find restaurant</button>
+
+</body>
+</html>
